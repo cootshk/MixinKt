@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "mixinkt_test",
+  "version": "${version}",
+  "name": "MixinKt Test",
+  "description": "Test mod for the MixinKt library.",
+  "authors": ["Cootshk"],
+  "license": "GPLv3+",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      {
+        "value": "dev.cootshk.mixinkt.test.MixinKtTest",
+        "adapter": "kotlin"
+      }
+    ]
+  },
+  "mixins": [
+    "mixinkt_test.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "minecraft": "${minecraft_version}",
+    "java": ">=${java_version}",
+    "fabric-api": "*",
+    "fabric-language-kotlin": "*",
+    "mixinkt": "*"
+  }
+}

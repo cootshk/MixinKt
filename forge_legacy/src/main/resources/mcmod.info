@@ -1,0 +1,12 @@
+[
+  {
+    "modid": "${mod_id}",
+    "name": "${mod_name}",
+    "description": "${description}",
+    "version": "${version}",
+    "authorList": ["${mod_author}"],
+    "credits": "${credits}",
+    "logoFile": "assets/${mod_id}/icon.png",
+    "useDependencyInformation": true
+  }
+]

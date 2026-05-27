@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${version}",
+  "name": "${mod_name}",
+  "description": "${description}",
+  "icon": "assets/${mod_id}/icon.png",
+  "environment": "*",
+  "authors": ["${mod_author}"],
+  "license": "${license}",
+  "entrypoints": {
+    "preLaunch": [
+      {
+        "value": "dev.cootshk.mixinkt.platform.fabric.MixinKtFabric::onPreLaunch",
+        "adapter": "kotlin"
+      }
+    ]
+  },
+"mixins": [
+    "${mod_id}.mixins.json"
+  ],
+  "depends": {
+    "fabric-language-kotlin": "*",
+    "fabricloader": "*"
+  }
+}
