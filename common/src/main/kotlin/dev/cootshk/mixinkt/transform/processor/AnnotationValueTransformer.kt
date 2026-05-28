@@ -1,5 +1,7 @@
 package dev.cootshk.mixinkt.transform.processor
 
+import kotlin.emptyArray
+
 /**
  * A cleaner function that allows you to modify a map of annotation name=value parameters, without having to touch the list directly.
  * @see AnnotationValueProcessor
@@ -11,7 +13,7 @@ fun interface AnnotationValueTransformer : AnnotationValueProcessor {
      * @param map A mutable map of the parameter name: the parameter value.
      * @return Nothing, you should mutate the map directly.
      */
-    operator fun invoke(map: MutableMap<String, Any>)
+    operator fun invoke(map: AnnotationValueMap)
     override operator fun invoke(annotations: Collection<Any>): MutableList<Any> =
         from(annotations)
         .also(::invoke)
@@ -49,5 +51,40 @@ fun interface AnnotationValueTransformer : AnnotationValueProcessor {
             return out
         }
         internal fun AnnotationValueMap.consume(): MutableList<Any> = consume(this)
+
+        /**
+         * Flatten an optional single parameter + an optional array parameter into one singular array inside the map.
+         */
+        inline fun <reified T> flattenValues(
+            map: AnnotationValueMap,
+            singleName: String,
+            pluralName: String = singleName + "s",
+            noinline skipOn: (T?) -> Boolean = ::_skipOn
+        ) {
+            @Suppress("UNCHECKED_CAST")
+            val arr = (map[pluralName] ?: emptyList<T>()) as List<T>
+            val initialObj: T? = map[singleName] as T?
+            if (skipOn(initialObj)) {
+                map[singleName] = arr
+                map.remove(pluralName)
+            } else {
+                map[singleName] = listOf(initialObj, *arr.toTypedArray())
+                map.remove(pluralName)
+            }
+        }
+
+        /**
+         * The default conditions for not adding the singleName value of the map to the array in [flattenValues]
+         */
+        @Suppress("FunctionName")
+        fun _skipOn(item: Any?): Boolean {
+            return when (item) {
+                is String -> item.isBlank()
+                is Array<*> -> item.isEmpty()
+                is List<*> -> item.isEmpty()
+                is Any -> false
+                else -> true
+            }
+        }
     }
 }
