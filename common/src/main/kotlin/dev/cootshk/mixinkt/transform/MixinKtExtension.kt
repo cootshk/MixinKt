@@ -1,5 +1,6 @@
 package dev.cootshk.mixinkt.transform
 
+import dev.cootshk.mixinkt.transform.injector.InjectTransformer
 import org.objectweb.asm.tree.ClassNode
 import org.spongepowered.asm.mixin.MixinEnvironment
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo
@@ -19,7 +20,8 @@ object MixinKtExtension : IExtension {
 
     override fun preApply(context: ITargetClassContext) {
         for (mixinNode in mixinNodesOf(context)) {
-            applyInjectAnnotations(mixinNode)
+            // TODO: registration system
+            InjectTransformer.applyTransformations(mixinNode)
         }
     }
 
@@ -31,32 +33,37 @@ object MixinKtExtension : IExtension {
         force: Boolean,
         classNode: ClassNode,
     ) {}
-}
 
-// Mixin's `ITargetClassContext` only exposes the *target* class node; the
-// applied mixin class nodes live on the concrete `TargetClassContext.mixins`
-// field. MixinExtras reaches for them the same way — see
-// `MixinInternals.getMixinsFor`.
-private val TARGET_CONTEXT_MIXINS = run {
-    val cls = Class.forName("org.spongepowered.asm.mixin.transformer.TargetClassContext")
-    cls.getDeclaredField("mixins").apply { isAccessible = true }
-}
+    private val TARGET_CONTEXT_MIXINS =
+        Class
+            .forName("org.spongepowered.asm.mixin.transformer.TargetClassContext")
+            .getDeclaredField("mixins")
+            .apply { isAccessible = true }
 
-private val MIXIN_INFO_GET_STATE = run {
-    val cls = Class.forName("org.spongepowered.asm.mixin.transformer.MixinInfo")
-    cls.getDeclaredMethod("getState").apply { isAccessible = true }
-}
+    private val MIXIN_INFO_GET_STATE =
+        Class
+            .forName("org.spongepowered.asm.mixin.transformer.MixinInfo")
+            .getDeclaredMethod("getState")
+            .apply { isAccessible = true }
 
-private val MIXIN_STATE_CLASS_NODE = run {
-    val cls = Class.forName("org.spongepowered.asm.mixin.transformer.MixinInfo\$State")
-    cls.getDeclaredField("classNode").apply { isAccessible = true }
-}
+    private val MIXIN_STATE_CLASS_NODE =
+        Class
+            .forName($$"org.spongepowered.asm.mixin.transformer.MixinInfo$State")
+            .getDeclaredField("classNode")
+            .apply { isAccessible = true }
 
-@Suppress("UNCHECKED_CAST")
-private fun mixinNodesOf(context: ITargetClassContext): List<ClassNode> {
-    val mixins = TARGET_CONTEXT_MIXINS.get(context) as Iterable<IMixinInfo>
-    return mixins.map { info ->
-        val state = MIXIN_INFO_GET_STATE.invoke(info)
-        MIXIN_STATE_CLASS_NODE.get(state) as ClassNode
+
+    /** Mixin's `ITargetClassContext` only exposes the *target* class node; the
+     *  applied mixin class nodes live on the concrete `TargetClassContext.mixins`
+     *  field.
+     *  @see com.llamalad7.mixinextras.utils.MixinInternals.getMixinsFor
+     */
+    @Suppress("UNCHECKED_CAST")
+    private fun mixinNodesOf(context: ITargetClassContext): List<ClassNode> {
+        val mixins = TARGET_CONTEXT_MIXINS.get(context) as Iterable<IMixinInfo>
+        return mixins.map { info ->
+            val state = MIXIN_INFO_GET_STATE.invoke(info)
+            MIXIN_STATE_CLASS_NODE.get(state) as ClassNode
+        }
     }
 }

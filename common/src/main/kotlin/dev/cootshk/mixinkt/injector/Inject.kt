@@ -1,5 +1,6 @@
 package dev.cootshk.mixinkt.injector
 
+import dev.cootshk.mixinkt.ext.*
 import org.spongepowered.asm.mixin.injection.At
 import org.spongepowered.asm.mixin.injection.Desc
 import org.spongepowered.asm.mixin.injection.callback.LocalCapture
@@ -11,10 +12,13 @@ import org.spongepowered.asm.mixin.injection.callback.LocalCapture
  */
 annotation class Inject(
     val id: String = "",
-    val method: Array<String> = [],
-    val target: Array<Desc> = [],
+    val method: String = "",
+    val methods: Array<String> = [],
+    val target: String = "",
+    val targets: Array<Desc> = [],
     val slice: Array<String> = [],
-    val at: Array<At>,
+    val at: At = At(""), // <-- cannot be placed in AtExt because it has to be a compile time constant
+    val ats: Array<At> = [],
     val cancellable: Boolean = false,
     val locals: LocalCapture = LocalCapture.NO_CAPTURE,
     val remap: Boolean = false,
